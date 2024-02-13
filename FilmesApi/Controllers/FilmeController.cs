@@ -10,26 +10,48 @@ public class FilmeController: ControllerBase
     private static List<Filme> filmes = new List<Filme>();
     private static int id = 1;
 
-    [HttpPost]
-    public void AdicionarFilme([FromBody] Filme filme)
+    [HttpPost("adicionar")]
+    public IActionResult Adicionar([FromBody] Filme filme)
     {
         filme.Id = id++;
         filmes.Add(filme);
 
         Console.WriteLine($"Id: {filme.Id} - Titulo: {filme.Titulo} - Duração: {filme.Duracao}");
 
+        return CreatedAtAction(nameof(RecuperarPorId), new { id = filme.Id }, filme);
+
     }
 
-    [HttpGet]
-    public IEnumerable<Filme> RecuperarFilmes()
+    [HttpPost("adicionarEmLote")]
+    public IActionResult AdicionarEmLote([FromBody] List<Filme> filmes)
+    {
+        foreach (var filme in filmes)
+        {
+            filme.Id = id++;
+            FilmeController.filmes.Add(filme);
+            Console.WriteLine($"Id: {filme.Id} - Titulo: {filme.Titulo} - Duração: {filme.Duracao}");
+        }
+
+        return CreatedAtAction(nameof(RecuperarTodos), new { }, filmes);
+    }
+
+    [HttpGet("recuperarTodos")]
+    public IEnumerable<Filme> RecuperarTodos()
     {
         return filmes;
     }
 
+    [HttpGet("paginacao/skip/{skip}/take/{take}")]
+    public IEnumerable<Filme> RecuperarPaginacao([FromRoute] int skip=0, [FromRoute] int take=10)
+    {
+        return filmes.Skip(skip).Take(take);
+    }
+
     [HttpGet("{id}")]
-    public Filme? RecuperarFilmePorId(int id)
+    public IActionResult RecuperarPorId(int id)
     {
         var filme = filmes.FirstOrDefault(filme => filme.Id == id);
-        return filme;
+        if (filme == null) return NotFound();
+        return Ok(filme);
     }
 }
