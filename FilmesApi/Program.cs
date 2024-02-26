@@ -6,6 +6,9 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
+// Adiciona o AutoMapper a aplicação
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 // Definido conexão com o banco de dados
 var connectionString = builder.Configuration.GetConnectionString("FilmesConnection");
 

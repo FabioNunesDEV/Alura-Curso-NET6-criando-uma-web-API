@@ -1,4 +1,7 @@
-﻿using FilmesApi.Models;
+﻿using AutoMapper;
+using FilmesApi.Data;
+using FilmesApi.Data.DTO;
+using FilmesApi.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilmesApi.Controllers;
@@ -7,50 +10,61 @@ namespace FilmesApi.Controllers;
 [Route("[controller]")]
 public class FilmeController: ControllerBase
 {
-    private static List<Filme> filmes = new List<Filme>();
-    private static int id = 1;
+    private FilmeContext _context;
+    private IMapper _mapper;
+
+    public FilmeController(FilmeContext context)
+    {
+        _context = context;
+    }
 
     [HttpPost("adicionar")]
-    public IActionResult Adicionar([FromBody] Filme filme)
+    public IActionResult Adicionar([FromBody] CreateFilmeDTO filmeDTO)
     {
-        filme.Id = id++;
-        filmes.Add(filme);
+        // Converte o DTO para o modelo
+        Filme filme = _mapper.Map<Filme>(filmeDTO);
+
+        _context.Filmes.Add(filme);
+        _context.SaveChanges();
 
         Console.WriteLine($"Id: {filme.Id} - Titulo: {filme.Titulo} - Duração: {filme.Duracao}");
 
         return CreatedAtAction(nameof(RecuperarPorId), new { id = filme.Id }, filme);
-
     }
 
     [HttpPost("adicionarEmLote")]
-    public IActionResult AdicionarEmLote([FromBody] List<Filme> filmes)
+    public IActionResult AdicionarEmLote([FromBody] List<CreateFilmeDTO> filmesDTO)
     {
-        foreach (var filme in filmes)
+        foreach (var filmeDTO in filmesDTO)
         {
-            filme.Id = id++;
-            FilmeController.filmes.Add(filme);
+            // Converte o DTO para o modelo
+            Filme filme = _mapper.Map<Filme>(filmeDTO);
+
+            _context.Filmes.Add(filme);
+            _context.SaveChanges();
             Console.WriteLine($"Id: {filme.Id} - Titulo: {filme.Titulo} - Duração: {filme.Duracao}");
         }
 
-        return CreatedAtAction(nameof(RecuperarTodos), new { }, filmes);
+        return CreatedAtAction(nameof(RecuperarTodos), new { }, filmesDTO);
     }
 
     [HttpGet("recuperarTodos")]
     public IEnumerable<Filme> RecuperarTodos()
     {
-        return filmes;
+        return _context.Filmes;
     }
 
     [HttpGet("paginacao/skip/{skip}/take/{take}")]
     public IEnumerable<Filme> RecuperarPaginacao([FromRoute] int skip=0, [FromRoute] int take=10)
     {
-        return filmes.Skip(skip).Take(take);
+        var fabio = "10";
+        return _context.Filmes.Skip(skip).Take(take);
     }
 
     [HttpGet("{id}")]
     public IActionResult RecuperarPorId(int id)
     {
-        var filme = filmes.FirstOrDefault(filme => filme.Id == id);
+        var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
         if (filme == null) return NotFound();
         return Ok(filme);
     }
