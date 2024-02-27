@@ -2,6 +2,7 @@
 using FilmesApi.Data;
 using FilmesApi.Data.DTO;
 using FilmesApi.Models;
+using FilmesApi.Profiles;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FilmesApi.Controllers;
@@ -13,23 +14,21 @@ public class FilmeController: ControllerBase
     private FilmeContext _context;
     private IMapper _mapper;
 
-    public FilmeController(FilmeContext context)
+    public FilmeController(FilmeContext context, IMapper mapper)
     {
         _context = context;
+        _mapper = mapper;
     }
 
     [HttpPost("adicionar")]
     public IActionResult Adicionar([FromBody] CreateFilmeDTO filmeDTO)
     {
-        // Converte o DTO para o modelo
         Filme filme = _mapper.Map<Filme>(filmeDTO);
-
         _context.Filmes.Add(filme);
         _context.SaveChanges();
-
-        Console.WriteLine($"Id: {filme.Id} - Titulo: {filme.Titulo} - Duração: {filme.Duracao}");
-
-        return CreatedAtAction(nameof(RecuperarPorId), new { id = filme.Id }, filme);
+        return CreatedAtAction(nameof(RecuperarPorId),
+            new { id = filme.Id },
+            filme);
     }
 
     [HttpPost("adicionarEmLote")]
@@ -67,5 +66,22 @@ public class FilmeController: ControllerBase
         var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
         if (filme == null) return NotFound();
         return Ok(filme);
+    }
+
+    [HttpPut("atualizarFilme/{id}")]
+    public IActionResult AtualizarFilme(int id, [FromBody] UpdateFilmeDTO filmeDTO)
+    {
+        // Verifica se o filme existe
+        var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
+
+        // Se não existir, retorna NotFound
+        if (filme == null) return NotFound();
+
+        // Atualiza o filme
+        _mapper.Map(filmeDTO, filme);
+        _context.SaveChanges();
+
+        // Retorna status code 204 - NoContent
+        return NoContent();
     }
 }
