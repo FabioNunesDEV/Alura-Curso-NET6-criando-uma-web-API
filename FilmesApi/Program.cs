@@ -1,10 +1,11 @@
 using FilmesApi.Data;
 using Microsoft.EntityFrameworkCore;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
 
 // Adiciona o AutoMapper a aplicação
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
