@@ -49,15 +49,16 @@ public class FilmeController: ControllerBase
     }
 
     [HttpGet("recuperarTodos")]
-    public IEnumerable<Filme> RecuperarTodos()
+    public IEnumerable<ReadFilmeDTO> RecuperarTodos()
     {
-        return _context.Filmes;
+
+        return _mapper.Map<List<ReadFilmeDTO>>(_context.Filmes);
     }
 
     [HttpGet("paginacao/skip/{skip}/take/{take}")]
-    public IEnumerable<Filme> RecuperarPaginacao([FromRoute] int skip=0, [FromRoute] int take=10)
+    public IEnumerable<ReadFilmeDTO> RecuperarPaginacao([FromRoute] int skip=0, [FromRoute] int take=10)
     {
-        return _context.Filmes.Skip(skip).Take(take);
+        return _mapper.Map<List<ReadFilmeDTO>>(_context.Filmes.Skip(skip).Take(take));
     }
 
     [HttpGet("{id}")]
@@ -65,7 +66,8 @@ public class FilmeController: ControllerBase
     {
         var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
         if (filme == null) return NotFound();
-        return Ok(filme);
+        var filmeDTO = _mapper.Map<ReadFilmeDTO>(filme);
+        return Ok(filmeDTO);
     }
 
     [HttpPut("atualizarFilme/{id}")]
@@ -108,6 +110,23 @@ public class FilmeController: ControllerBase
 
         // Atualiza o filme
         _mapper.Map(filmeParaAtualizar, filme);
+        _context.SaveChanges();
+
+        // Retorna status code 204 - NoContent
+        return NoContent();
+    }
+
+    [HttpDelete("deletarFilme/{id}")]   
+    public IActionResult DeletarFilme(int id)
+    {
+        // Verifica se o filme existe
+        var filme = _context.Filmes.FirstOrDefault(filme => filme.Id == id);
+
+        // Se não existir, retorna NotFound
+        if (filme == null) return NotFound();
+
+        // Remove o filme
+        _context.Filmes.Remove(filme);
         _context.SaveChanges();
 
         // Retorna status code 204 - NoContent
