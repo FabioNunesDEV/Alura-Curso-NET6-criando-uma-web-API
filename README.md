@@ -15,4 +15,4 @@ Documentando com Swagger<br>
 
 Certificado de conclusão<br>
 
-<img align="center" alt="Dev-HTML" height="500em" src="https://github.com/FabioNunesDEV/CURSO_CSharp_UdemyPOO/blob/main/Certificado/imgCertificado.jpg">
+<img align="center" alt="Dev-HTML" height="500em" src="https://github.com/FabioNunesDEV/Alura-Curso-NET6-criando-uma-web-API/blob/main/Certificado/Captura%20de%20tela%202024-02-29%20223805.png">
